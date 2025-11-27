@@ -3,3 +3,5 @@
 Part A - done
 
 Part B - done
+
+Part C - done 70 %
