@@ -16,7 +16,7 @@ def load_model():
     df = pd.read_csv('dataset/PGCB_date_power_demand.csv', sep=';')
     
     # Feature engineering (same as notebook)
-    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+    df['datetime'] = pd.to_datetime(df['datetime'])
     df['hour'] = df['datetime'].dt.hour
     df['day'] = df['datetime'].dt.day
     df['month'] = df['datetime'].dt.month
