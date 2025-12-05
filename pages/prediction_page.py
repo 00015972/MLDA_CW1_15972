@@ -1,18 +1,46 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.preprocessing import StandardScaler
 
 st.set_page_config(page_title="Prediction")
 
 st.title("Power Demand Prediction")
 st.write("Enter the power generation values to predict electricity demand")
 
-# Loading model and scaler
+# Train model from dataset (since model files are not in repo)
 @st.cache_resource
 def load_model():
-    model = joblib.load('models/best_model.pkl')
-    scaler = joblib.load('models/scaler.pkl')
+    # Load dataset
+    df = pd.read_csv('dataset/PGCB_date_power_demand.csv', sep=';')
+    
+    # Feature engineering (same as notebook)
+    df['datetime'] = pd.to_datetime(df['date'] + ' ' + df['time'])
+    df['hour'] = df['datetime'].dt.hour
+    df['day'] = df['datetime'].dt.day
+    df['month'] = df['datetime'].dt.month
+    df['year'] = df['datetime'].dt.year
+    
+    # Features and target
+    feature_cols = ['generation_mw', 'load_shedding', 'gas', 'liquid_fuel', 'coal', 
+                    'hydro', 'solar', 'india_bheramara_hvdc', 'india_tripura',
+                    'hour', 'day', 'month', 'year']
+    X = df[feature_cols]
+    y = df['demand_mw']
+    
+    # Scale features
+    features_to_scale = ['gas', 'liquid_fuel', 'coal', 'hydro', 'solar', 
+                         'india_bheramara_hvdc', 'india_tripura', 'hour', 
+                         'day', 'month', 'year']
+    scaler = StandardScaler()
+    X_scaled = X.copy()
+    X_scaled[features_to_scale] = scaler.fit_transform(X[features_to_scale])
+    
+    # Train Random Forest (best model from evaluation)
+    model = RandomForestRegressor(max_depth=20, min_samples_split=2, n_estimators=100, random_state=42)
+    model.fit(X_scaled, y)
+    
     return model, scaler
 
 model, scaler = load_model()
